@@ -2,6 +2,8 @@
 
 Compare how many cloud-backed coding agents a machine can carry at once, what each agent slot costs over its life, and whether it beats buying a 128 GB Core Ultra 7 270K Plus desktop.
 
+**Live site:** [dbeihl.github.io/agent-slot-calculator](https://dbeihl.github.io/agent-slot-calculator/) · [cost chart](https://dbeihl.github.io/agent-slot-calculator/costs/)
+
 The site has two pages. The calculator evaluates one machine in detail. The cost chart (`/costs/`) plots every machine's lifetime cost per agent against what one box costs over its life, under the settings last used in the calculator. It covers the report's presets, sourced market listings and machines you add, filters by condition, type, memory and budget, marks the cheapest per-agent option at each budget, and links each machine back to the calculator. [Market data](docs/market-data.md) explains the sources and the weekly eBay price refresh.
 
 ## Run locally
@@ -39,4 +41,4 @@ The [build plan](docs/build-plan.md), [personas](docs/personas.md), and [validat
 
 `astro.config.mjs` sets the project path to `/agent-slot-calculator/` on `https://dbeihl.github.io`. The deploy workflow validates pull requests and uses the [official Astro action](https://github.com/withastro/action) to prepare the Pages artifact after a push to `main`. Its dependent deploy job publishes that artifact to the `github-pages` environment.
 
-The e2e workflow runs model and browser tests on every pull request. GitHub Actions on this account is currently billing-blocked, so those jobs are not evidence of a completed check. Local results are recorded in the validation document. Enabling Pages in repository settings and publishing the site belong to the release stage.
+The e2e workflow runs model and browser tests on every pull request. Every push to `main` publishes the site at <https://dbeihl.github.io/agent-slot-calculator/>.
