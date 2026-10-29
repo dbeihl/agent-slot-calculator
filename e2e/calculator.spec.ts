@@ -195,3 +195,29 @@ for (const width of [400, 1280]) {
     });
   }
 }
+
+test('a returning visitor sees current preset data, not the copy saved on their first visit', async ({ page }) => {
+  await page.goto(site);
+  await page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('agent-slot-calc-v1')!);
+    saved.M.price = 3600;
+    saved.M.upGB = 192; saved.M.upCost = 2000;
+    localStorage.setItem('agent-slot-calc-v1', JSON.stringify(saved));
+  });
+  await page.reload();
+  await expect(page.locator('#preset')).toHaveValue('270k128');
+  await expect(page.locator('#f-price-n')).toHaveValue('3000');
+  await expect(page.locator('#vpill')).toHaveText('Worth it');
+  await expect(page.locator('#upgb')).toHaveValue('192');
+});
+
+test('an incomplete saved machine falls back to the reference box', async ({ page }) => {
+  await page.goto(site);
+  await page.evaluate(() => {
+    localStorage.setItem('agent-slot-calc-v1', JSON.stringify({ A: { p: 0.3 }, M: { price: 100, ram: 64 }, presetId: 'custom' }));
+  });
+  await page.reload();
+  await expect(page.locator('#preset')).toHaveValue('270k128');
+  await expect(page.locator('#mname')).not.toHaveValue('undefined');
+  await expect(page.locator('#agents')).toHaveText('14');
+});

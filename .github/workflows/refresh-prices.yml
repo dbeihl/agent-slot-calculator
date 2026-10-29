@@ -1,0 +1,43 @@
+name: Refresh market prices
+
+# Weekly: pull eBay asking prices for the market listings and open a pull
+# request with the changes, so every price move is reviewed before it ships.
+# Needs repository secrets EBAY_CLIENT_ID and EBAY_CLIENT_SECRET, and
+# Settings > Actions > "Allow GitHub Actions to create pull requests".
+on:
+  schedule:
+    - cron: '17 14 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Refresh prices from eBay
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: node scripts/refresh-prices.mjs
+      - run: npm test
+      - run: npm run build
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: data/refresh-prices
+          delete-branch: true
+          add-paths: src/data/market-prices.json
+          commit-message: 'data: refresh eBay market prices'
+          title: 'data: refresh eBay market prices'
+          body: |
+            Weekly eBay refresh of used-machine asking prices (trimmed median of matching fixed-price US listings).
+            Review the price moves in `src/data/market-prices.json` before merging. Asking prices are not sale prices.

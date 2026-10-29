@@ -1,6 +1,8 @@
 import { evaluate, evaluateReference, judge, type Assumptions, type Machine, type Result, type VerdictKey } from '../lib/model';
 import { DEFAULTS, PRESETS, REFERENCE_ID } from '../data/presets';
 import { readSaved, writeSaved, type EditableMachine } from '../lib/saved';
+import { CATALOG, FORM_LABEL } from '../data/catalog';
+import { userEntries } from '../lib/listings';
 import { fmt$ } from '../lib/format';
 
 
@@ -103,8 +105,12 @@ function buildField<K extends string>(def: FieldDef<K>, container: HTMLElement, 
   };
 }
 
+/** Every machine the dropdown can load: the report's presets, market listings and the user's own listings. */
+const allMachines = (): Machine[] => [...CATALOG, ...userEntries()].map((e) => e.machine);
+
 function loadPreset(id: string) {
-  const p = PRESETS.find((x) => x.id === id) || PRESETS.find((x) => x.id === REFERENCE_ID)!;
+  const all = allMachines();
+  const p = all.find((x) => x.id === id) || PRESETS.find((x) => x.id === REFERENCE_ID)!;
   presetId = p.id || 'custom';
   M = { name: p.name, price: p.price, ram: p.ram, st: p.st, mt: p.mt, idle: p.idle, load: p.load, reserve: p.reserve, owned: !!p.owned, upGB: p.upGB || 0, upCost: p.upCost || 0, note: p.note };
   syncMachine();
@@ -122,10 +128,25 @@ function syncMachine() {
 function syncWork() { [...WORK_FIELDS, ...ADV_FIELDS].forEach((d) => d.sync?.()); }
 
 function save() { writeSaved({ A, M, presetId }); }
+const MACHINE_NUMBERS = ['price', 'ram', 'st', 'mt', 'idle', 'load', 'reserve'] as const;
 function restore() {
   const s = readSaved();
   if (!s) return false;
-  A = s.A; M = s.M; presetId = s.presetId;
+  A = s.A;
+  // A machine still in the catalog reloads from current data, so price and spec updates reach returning
+  // visitors; only the upgrade inputs, which don't mark the machine as edited, carry over.
+  if (s.presetId !== 'custom' && allMachines().some((x) => x.id === s.presetId)) {
+    loadPreset(s.presetId);
+    M.upGB = Number(s.M.upGB) || 0; M.upCost = Number(s.M.upCost) || 0;
+    return true;
+  }
+  // An edited machine, or one no longer in the catalog, is kept only if it is complete.
+  if (MACHINE_NUMBERS.every((k) => typeof s.M[k] === 'number' && isFinite(s.M[k]))) {
+    M = { ...s.M, name: typeof s.M.name === 'string' ? s.M.name : 'Custom machine', owned: !!s.M.owned, upGB: Number(s.M.upGB) || 0, upCost: Number(s.M.upCost) || 0 };
+    presetId = 'custom';
+  } else {
+    loadPreset(REFERENCE_ID);
+  }
   return true;
 }
 
@@ -287,6 +308,15 @@ function init() {
     list.forEach((p) => { const o = document.createElement('option'); o.value = p.id || 'custom'; o.textContent = p.name; og.appendChild(o); });
     sel.appendChild(og);
   });
+  // Market listings by form factor, then the user's own listings.
+  const extra = [...CATALOG.filter((e) => e.origin === 'market'), ...userEntries()];
+  const extraGroups = new Map<string, Machine[]>();
+  extra.forEach((e) => { const g = e.origin === 'yours' ? 'Your listings' : 'Market · ' + FORM_LABEL[e.form]; extraGroups.set(g, [...(extraGroups.get(g) || []), e.machine]); });
+  extraGroups.forEach((list, g) => {
+    const og = document.createElement('optgroup'); og.label = g;
+    list.sort((a, b) => a.price - b.price).forEach((m) => { const o = document.createElement('option'); o.value = m.id || 'custom'; o.textContent = m.name; og.appendChild(o); });
+    sel.appendChild(og);
+  });
   const oc = document.createElement('option'); oc.value = 'custom'; oc.textContent = 'Custom (edited)'; sel.appendChild(oc);
 
   const markCustom = () => { if (presetId !== 'custom') { presetId = 'custom'; sel.value = 'custom'; } };
@@ -305,7 +335,7 @@ function init() {
   const restored = restore();
   // ?preset=<id> (links from the cost chart) loads that machine and keeps the saved workload.
   const linked = new URLSearchParams(location.search).get('preset');
-  if (linked && PRESETS.some((p) => p.id === linked)) { loadPreset(linked); history.replaceState(null, '', location.pathname); }
+  if (linked && allMachines().some((p) => p.id === linked)) { loadPreset(linked); history.replaceState(null, '', location.pathname); }
   else if (!restored) loadPreset('270k128');
   syncMachine(); syncWork();
   render();

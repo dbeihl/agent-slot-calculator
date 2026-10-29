@@ -11,9 +11,10 @@ A static Astro site with two pages. The calculator works out how many concurrent
 ## Architecture
 
 - `src/lib/model.ts`: pure capacity and cost model, with no DOM. Binomial builds-at-once, memory sized to the 99th percentile, CPU to the 95th (5% overshoot allowed), and slow cores raise the effective duty cycle.
-- `src/data/presets.ts`: the preset machines, `DEFAULTS` and `REFERENCE_ID`.
+- `src/data/presets.ts`: the report's preset machines, `DEFAULTS` and `REFERENCE_ID`.
+- `src/data/catalog.ts`: joins the presets with market data (`cpus.json`, `listings.json`, and `market-prices.json` from `scripts/refresh-prices.mjs`). Sources, rules and gaps are in `docs/market-data.md`; `test/catalog.test.ts` enforces them.
 - `src/scripts/calculator.ts`: the DOM controller. It builds the slider fields, renders the verdict, chart and table, and saves to localStorage through `src/lib/saved.ts` (key `agent-slot-calc-v1`). `?preset=<id>` loads a preset and keeps the saved workload.
-- `src/pages/costs/`, `src/scripts/costs.ts` and `src/lib/costs.ts`: the cost chart page. It plots each machine's lifetime total against its lifetime cost per agent on log axes, reading the calculator's saved settings.
+- `src/pages/costs/`, `src/scripts/costs.ts` and `src/lib/costs.ts`: the cost chart page. It plots each machine's lifetime total against its lifetime cost per agent on log axes, with filters and bands relative to the cheapest machine shown. `src/lib/listings.ts` holds machines the user adds (localStorage, exportable).
 - `src/components/*.astro`: static markup. Element ids are used by the controller, so don't rename them.
 - `src/styles/global.css`: design tokens (light plus two dark blocks) and component styles. See `docs/source/DESIGN.md`.
 
@@ -25,6 +26,7 @@ A static Astro site with two pages. The calculator works out how many concurrent
 - Every color comes from a token, and both themes must stay legible.
 - No horizontal page scroll at 400px. Wide content scrolls inside its own container.
 - Wrap all localStorage access in try/catch.
+- Every score in `cpus.json` and price in `listings.json` needs a source link. Never fill one in from memory; a sourced estimate (the report's Apple figures) is marked `estimated`.
 
 ## Port contract
 

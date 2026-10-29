@@ -2,7 +2,7 @@
 
 Compare how many cloud-backed coding agents a machine can carry at once, what each agent slot costs over its life, and whether it beats buying a 128 GB Core Ultra 7 270K Plus desktop.
 
-The site has two pages. The calculator evaluates one machine in detail. The cost chart (`/costs/`) plots every machine's lifetime cost per agent against what one box costs over its life, under the settings last used in the calculator. It marks the cheapest per-agent option at each budget, and links each machine back to the calculator.
+The site has two pages. The calculator evaluates one machine in detail. The cost chart (`/costs/`) plots every machine's lifetime cost per agent against what one box costs over its life, under the settings last used in the calculator. It covers the report's presets, sourced market listings and machines you add, filters by condition, type, memory and budget, marks the cheapest per-agent option at each budget, and links each machine back to the calculator. [Market data](docs/market-data.md) explains the sources and the weekly eBay price refresh.
 
 ## Run locally
 
