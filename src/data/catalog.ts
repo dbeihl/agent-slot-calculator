@@ -1,5 +1,5 @@
 /**
- * The machine catalog: the report's 23 presets plus market listings.
+ * The machine catalog: the report's 23 presets, Aaron's own machines (_AB) and market listings.
  *
  * Market data is split in two so a new machine is one short record:
  * - `cpus.json`: one row per processor with its PassMark scores and source.
@@ -96,7 +96,7 @@ const cpuById = new Map(CPUS.map((c) => [c.id, c]));
 export const findCpu = (id: string) => cpuById.get(id);
 
 /** Report presets: condition and form from the report's scorecard; power marked estimated where the report says so. */
-const REPORT_META: Record<string, { condition: Condition; form: Form; powerEstimated?: boolean }> = {
+const REPORT_META: Record<string, { condition: Condition; form: Form; powerEstimated?: boolean; source?: string }> = {
   m920q: { condition: 'used', form: 'mini', powerEstimated: true },
   m720q: { condition: 'used', form: 'mini', powerEstimated: true },
   t10500: { condition: 'used', form: 'mini' },
@@ -120,6 +120,14 @@ const REPORT_META: Record<string, { condition: Condition; form: Form; powerEstim
   mbp: { condition: 'owned', form: 'mac', powerEstimated: true },
   imac: { condition: 'owned', form: 'mac' },
   xeon: { condition: 'owned', form: 'server', powerEstimated: true },
+  // Aaron's own machines (_AB): specs from his fleet roster, scores from PassMark, power from estimatePower.
+  'ab-pve': { condition: 'owned', form: 'tower', powerEstimated: true, source: 'https://www.cpubenchmark.net/cpu.php?id=6296' },
+  'ab-base-desk': { condition: 'owned', form: 'tower', powerEstimated: true, source: 'https://www.cpubenchmark.net/cpu.php?id=3869' },
+  'ab-pve-shop': { condition: 'owned', form: 'tower', powerEstimated: true, source: 'https://www.cpubenchmark.net/cpu.php?id=4325' },
+  'ab-shop-desk': { condition: 'owned', form: 'mini', powerEstimated: true, source: 'https://www.cpubenchmark.net/compare/3995vs3922/Intel-Core-i3-1125G4-vs-Intel-Core-i5-1145G7' },
+  'ab-hp640': { condition: 'owned', form: 'mini', powerEstimated: true, source: 'https://cpubenchmark.net/compare/5825vs4794/Intel-Core-Ultra-7-165U-vs-Intel-Core-i7-1255U' },
+  'ab-yoga9': { condition: 'owned', form: 'mini', powerEstimated: true, source: 'https://www.cpubenchmark.net/compare/Intel-i7-7500U-vs-Intel-i7-8550U/2863vs3064' },
+  'ab-pve-tiny': { condition: 'owned', form: 'mini', powerEstimated: true, source: 'https://www.cpubenchmark.net/cpu.php?id=2041' },
 };
 
 /**
@@ -189,7 +197,7 @@ const reportEntries: CatalogEntry[] = PRESETS.map((p) => {
     priceKind: p.owned ? 'owned' : 'report',
     powerEstimated: !!meta.powerEstimated,
     scoreEstimated: meta.form === 'mac',
-    source: 'docs/research-report.md',
+    source: meta.source ?? 'docs/research-report.md',
     seen: '2026-10',
   };
 });

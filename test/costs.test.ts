@@ -57,7 +57,7 @@ describe('filters', () => {
     expect(ids({ condition: 'used', owned: false })).toEqual(['m920q', 'm720q', 't10500', 't12500', '5950x', 'epyc']);
     expect(ids({ form: 'mac', owned: false })).toEqual(['m6', 'm5pro', 'm5max']);
     expect(ids({ minRam: 192 })).toEqual(['9950x192', 'epyc', 'tr9980b']);
-    expect(ids({ maxTotal: 1000 })).toEqual(['m920q', 'm720q', 't10500', 't12500', 'mbp', 'imac']);
+    expect(ids({ maxTotal: 1000 })).toEqual(['m920q', 'm720q', 't10500', 't12500', 'ab-pve-shop', 'ab-shop-desk', 'ab-hp640', 'ab-yoga9', 'ab-pve-tiny', 'mbp', 'imac']);
     expect(ids({ owned: false })).not.toContain('mbp');
   });
 });
