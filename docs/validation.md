@@ -6,19 +6,19 @@ Local checks on macOS on 2026-10-23 passed against the static Astro build under 
 
 | Acceptance criterion | Evidence |
 | --- | --- |
-| 32 supplied parity vectors plus defaults | `npm test` passes 33 tests in `test/model.test.ts`. |
+| 32 supplied parity vectors plus defaults | `npm test` passes 35 tests in `test/model.test.ts`: the 33 parity and default checks, plus multi-CPU and RAM stick checks. |
 | Static output without TypeScript errors | `npm run build` passes `astro check` and produces `dist/index.html`. |
 | Layout at 400px and 1280px, light and dark | Author inspected all four screenshot pairs below. Section positions and dimensions match with a maximum difference of 0px. |
 | Default reference verdict | Browser test pins 14 agents, memory limit, $214, $305 and Worth it. |
 | M920q verdict | Browser test pins 0 agents and Can't hold an agent. |
 | Duty cycle 15% | Browser test pins 26 agents. |
 | Phone overflow | Both 400px theme tests verify page width equals viewport width and the table scrolls internally. |
-| Keyboard controls | Browser test reaches every control by Tab with a 2px visible focus outline. Row tests activate with Enter and Space. |
+| Keyboard controls | Browser test reaches every visible control by Tab with a 2px visible focus outline. Row tests activate with Enter and Space. |
 | Reload and blocked storage | Browser tests restore custom machine and workload inputs, and exercise a throwing localStorage getter. |
 | Same-origin runtime assets | Four layout tests observe all requests and reject other origins. Fonts load from the site's bundled assets. |
 | Reduced motion | Four layout tests emulate reduced motion and verify the verdict band has no transition. |
 
-`npm run test:e2e` passes 14 tests. Additional behavior checks cover paired slider and number controls, number values above slider maxima, custom machine selection, OS reserve, ownership, upgrades, workload chips, advanced assumptions, reset, the phone summary, and the sticky desktop verdict.
+`npm run test:e2e` passes 17 tests in `e2e/calculator.spec.ts`. Additional behavior checks cover paired slider and number controls, number values above slider maxima, custom machine selection, OS reserve, ownership, upgrades, multiple CPUs, the RAM stick comparison, workload chips, advanced assumptions, reset, the phone summary, and the sticky desktop verdict.
 
 ## Visual comparison
 
@@ -37,7 +37,7 @@ Screenshots and interactive inspection used `chrome-devtools-axi`. These are aut
 
 Commit `9f48a98` adds only the default browser test. Against the scaffold it fails at `#agents`, expecting 14 and finding no element. After the port, the same test passes.
 
-Commit `642fca6` added a zero-memory test for a UI guard. The guard and its test were later removed to restore prototype behavior, so [the validation log](validation/local-checks.txt), recorded before that removal, lists 14 browser tests. `src/lib/model.ts` and `src/data/presets.ts` remain byte-identical to the supplied seed files, as do `test/model.test.ts` and `test/test-vectors.json`.
+Commit `642fca6` added a zero-memory test for a UI guard. The guard and its test were later removed to restore prototype behavior, so [the validation log](validation/local-checks.txt), recorded before that removal, lists 14 browser tests. `test/test-vectors.json` remains byte-identical to the supplied seed file. `src/lib/model.ts`, `src/data/presets.ts` and `test/model.test.ts` have since changed on purpose to add multiple CPUs and the RAM stick comparison.
 
 ## Known handoff edges
 

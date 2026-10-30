@@ -31,6 +31,8 @@ Run the browser acceptance tests with `npm run test:e2e`. They start their own p
 4. Slower single-thread scores stretch the serial part of every build, which raises that machine's effective duty cycle. Weak multi-thread scores stretch the parallel part. The multi-thread score is per CPU, and each CPU beyond the first adds 80% of it; single-thread speed does not change.
 5. Lifetime per agent is (price + years × yearly power) ÷ agents. Machines you already own count power only. "Worth it" means it beats the 128 GB Core Ultra 7 270K Plus desktop under the same settings; "Close call" is within 25%.
 
+When a machine has two or more CPUs, a RAM sticks box compares what it costs to reach the Memory figure with 16, 32 or 64 GB sticks. Enter the slots per CPU and the stick prices you can get; there are no default prices. Sticks are split evenly across the CPUs, a size that needs more slots than the board has is shown as not fitting, and the cheapest fitting size is marked. The comparison doesn't change the price, agent count or verdict.
+
 The 23 report presets and defaults come from the [research report](docs/research-report.md); the _AB entries are Aaron's own machines with PassMark sources. Prices are from October 2026. Mac scores, several power figures and some prices are estimates. Used prices vary by listing.
 
 ## Design and validation

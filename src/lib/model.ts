@@ -210,3 +210,21 @@ export function judge(r: Result, ref: Result, m: Machine): Verdict {
 export function evaluateReference(refMachine: Machine, a: Assumptions): Result {
   return evaluate({ ...refMachine, owned: false }, a, null, a.refPrice);
 }
+
+export interface StickOption {
+  gb: number;
+  /** Sticks bought in total, the same number on every CPU. */
+  sticks: number;
+  /** Whether that many sticks fit in each CPU's slots. */
+  fits: boolean;
+  cost: number;
+}
+
+/** What it costs to reach `ram` GB with each stick size, filling every CPU evenly. */
+export function stickOptions(ram: number, cpus: number, slotsPerCpu: number, prices: Record<number, number>): StickOption[] {
+  return Object.entries(prices).map(([g, price]) => {
+    const gb = Number(g);
+    const perCpu = Math.ceil(ram / cpus / gb);
+    return { gb, sticks: perCpu * cpus, fits: perCpu <= slotsPerCpu, cost: perCpu * cpus * price };
+  });
+}

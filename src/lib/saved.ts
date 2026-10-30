@@ -8,7 +8,7 @@ import { DEFAULTS } from '../data/presets';
 
 export const STORE_KEY = 'agent-slot-calc-v1';
 
-export type EditableMachine = Machine & { owned: boolean; upGB: number; upCost: number; cpus: number };
+export type EditableMachine = Machine & { owned: boolean; upGB: number; upCost: number; cpus: number; slots: number; stick: Record<number, number> };
 
 export interface Saved {
   A: Assumptions;

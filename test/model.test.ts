@@ -5,7 +5,7 @@
  * test pass; fix the port instead.
  */
 import { describe, expect, it } from 'vitest';
-import { evaluate, evaluateReference, judge, type Assumptions, type Machine } from '../src/lib/model';
+import { evaluate, evaluateReference, judge, stickOptions, type Assumptions, type Machine } from '../src/lib/model';
 import { DEFAULTS, PRESETS, REFERENCE_ID } from '../src/data/presets';
 import vectors from './test-vectors.json';
 
@@ -41,5 +41,20 @@ describe('multiple CPUs', () => {
     const two = evaluate({ ...base, cpus: 2 }, DEFAULTS);
     expect(two).toEqual(evaluate({ ...base, mt: base.mt * 1.8 }, DEFAULTS));
     expect(two.cpuFitBuilds).toBeCloseTo(evaluate(base, DEFAULTS).cpuFitBuilds * 1.8);
+  });
+});
+
+describe('RAM stick options', () => {
+  it('price each stick size and check it fits the slots', () => {
+    // 128 GB on 2 CPUs with 4 slots each: 16 GB sticks need 4 per CPU, 64 GB sticks need 1.
+    expect(stickOptions(128, 2, 4, { 16: 100, 64: 500 })).toEqual([
+      { gb: 16, sticks: 8, fits: true, cost: 800 },
+      { gb: 64, sticks: 2, fits: true, cost: 1000 },
+    ]);
+    // 2 slots per CPU: 16 GB sticks don't fit; odd splits round up per CPU.
+    expect(stickOptions(96, 2, 2, { 16: 100, 32: 200 })).toEqual([
+      { gb: 16, sticks: 6, fits: false, cost: 600 },
+      { gb: 32, sticks: 4, fits: true, cost: 800 },
+    ]);
   });
 });

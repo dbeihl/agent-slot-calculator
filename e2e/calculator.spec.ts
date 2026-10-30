@@ -115,7 +115,7 @@ test('keyboard can reach every control with a visible focus ring', async ({ page
   await page.goto(site);
   await page.getByText('More assumptions', { exact: true }).click();
   const selector = 'a[href], input, select, button, summary, tr[tabindex="0"]';
-  const total = await page.locator(selector).count();
+  const total = await page.locator(selector).filter({ visible: true }).count();
   const reached = new Set<number>();
   for (let i = 0; i < total + 3 && reached.size < total; i++) {
     await page.keyboard.press('Tab');
@@ -259,4 +259,36 @@ test('a second CPU adds 80% of the multi-thread score', async ({ page }) => {
   await expect(page.locator('#limit')).toHaveText('limited by memory');
   await expect(page.getByRole('slider', { name: 'CPUs', exact: true })).toHaveValue('2');
   await expect(page.locator('#preset')).toHaveValue('custom');
+});
+
+test('a multi-CPU box compares RAM stick sizes', async ({ page }) => {
+  await page.goto(site);
+  await expect(page.locator('#sticks-box')).toBeHidden();
+  await page.getByRole('combobox', { name: 'Start from' }).selectOption('xeon');
+  await expect(page.locator('#sticks-box')).toBeVisible();
+  await page.getByRole('spinbutton', { name: 'Slots per CPU' }).fill('4');
+  await page.getByRole('spinbutton', { name: '16 GB stick' }).fill('100');
+  await page.getByRole('spinbutton', { name: '32 GB stick' }).fill('250');
+  await expect(page.locator('#sticks-out')).toHaveText('128 GB across 2 CPUs × 4 slots: 8 × 16 GB = $800 (cheapest) · 4 × 32 GB = $1,000.');
+  await page.getByRole('spinbutton', { name: 'Slots per CPU' }).fill('2');
+  await expect(page.locator('#sticks-out')).toHaveText('128 GB across 2 CPUs × 2 slots: 16 GB sticks need 4 slots per CPU · 4 × 32 GB = $1,000 (cheapest).');
+  await page.getByRole('spinbutton', { name: 'CPUs', exact: true }).fill('1');
+  await expect(page.locator('#sticks-box')).toBeHidden();
+  await page.getByRole('combobox', { name: 'Start from' }).selectOption('mk-dell-poweredge-r730-2x-e5-2680-v4-128-gb');
+  await expect(page.getByRole('spinbutton', { name: 'CPUs', exact: true })).toHaveValue('2');
+  await expect(page.locator('#sticks-box')).toBeVisible();
+});
+
+test('a corrupted saved stick price list does not break the RAM stick inputs', async ({ page }) => {
+  await page.goto(site);
+  await page.getByRole('combobox', { name: 'Start from' }).selectOption('xeon');
+  await page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('agent-slot-calc-v1')!);
+    saved.M.stick = 'garbage';
+    localStorage.setItem('agent-slot-calc-v1', JSON.stringify(saved));
+  });
+  await page.reload();
+  await page.getByRole('spinbutton', { name: 'Slots per CPU' }).fill('4');
+  await page.getByRole('spinbutton', { name: '16 GB stick' }).fill('100');
+  await expect(page.locator('#sticks-out')).toHaveText('128 GB across 2 CPUs × 4 slots: 8 × 16 GB = $800 (cheapest).');
 });

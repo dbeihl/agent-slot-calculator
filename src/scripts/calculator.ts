@@ -1,4 +1,4 @@
-import { evaluate, evaluateReference, judge, type Assumptions, type Machine, type Result, type VerdictKey } from '../lib/model';
+import { evaluate, evaluateReference, judge, stickOptions, type Assumptions, type Machine, type Result, type VerdictKey } from '../lib/model';
 import { DEFAULTS, PRESETS, REFERENCE_ID } from '../data/presets';
 import { readSaved, writeSaved, type EditableMachine } from '../lib/saved';
 import { CATALOG, FORM_LABEL } from '../data/catalog';
@@ -7,6 +7,7 @@ import { fmt$ } from '../lib/format';
 
 
 type MachineField = 'price' | 'ram' | 'st' | 'mt' | 'cpus' | 'idle' | 'load';
+const STICK_GB = [16, 32, 64];
 type FieldDef<K extends string> = {
   k: K;
   label: string;
@@ -28,11 +29,15 @@ type ElementMap = {
   owned: HTMLInputElement;
   upgb: HTMLInputElement;
   upcost: HTMLInputElement;
+  slots: HTMLInputElement;
+  stick16: HTMLInputElement;
+  stick32: HTMLInputElement;
+  stick64: HTMLInputElement;
   chart: SVGSVGElement;
 } & Record<'vband' | 'vpill' | 'bar-pill' | 'vname' | 'res-assume' | 'agents' | 'bar-agents' |
   'limit' | 'm-hw' | 'm-hw-s' | 'm-tco' | 'bar-tco' | 'm-tco-s' | 'm-pwr' | 'm-pwr-s' |
   'm-ref' | 'm-ref-s' | 'fleet' | 'flags' | 'chart-title' | 'tbody' | 'machine-fields' |
-  'work-fields' | 'adv-fields' | 'os-seg' | 'verdict-seg' | 'source-seg' | 'h-table' | 'mnote' | 'h-machine' | 'reset', HTMLElement>;
+  'work-fields' | 'adv-fields' | 'os-seg' | 'verdict-seg' | 'source-seg' | 'h-table' | 'mnote' | 'sticks-box' | 'sticks-out' | 'h-machine' | 'reset', HTMLElement>;
 
 const $ = <K extends keyof ElementMap>(id: K): ElementMap[K] => document.getElementById(id) as ElementMap[K];
 
@@ -113,7 +118,7 @@ function loadPreset(id: string) {
   const all = allMachines();
   const p = all.find((x) => x.id === id) || PRESETS.find((x) => x.id === REFERENCE_ID)!;
   presetId = p.id || 'custom';
-  M = { name: p.name, price: p.price, ram: p.ram, st: p.st, mt: p.mt, cpus: p.cpus || 1, idle: p.idle, load: p.load, reserve: p.reserve, owned: !!p.owned, upGB: p.upGB || 0, upCost: p.upCost || 0, note: p.note };
+  M = { name: p.name, price: p.price, ram: p.ram, st: p.st, mt: p.mt, cpus: p.cpus || 1, idle: p.idle, load: p.load, reserve: p.reserve, owned: !!p.owned, upGB: p.upGB || 0, upCost: p.upCost || 0, slots: 0, stick: M?.stick || {}, note: p.note };
   syncMachine();
 }
 function syncMachine() {
@@ -124,26 +129,30 @@ function syncMachine() {
   document.querySelectorAll<HTMLButtonElement>('#os-seg button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === M.reserve)));
   $('upgb').value = M.upGB ? String(M.upGB) : '';
   $('upcost').value = M.upCost ? String(M.upCost) : '';
+  $('slots').value = M.slots ? String(M.slots) : '';
+  STICK_GB.forEach((g) => { $(`stick${g}` as 'stick16').value = M.stick[g] ? String(M.stick[g]) : ''; });
   $('mnote').textContent = M.note || '';
 }
 function syncWork() { [...WORK_FIELDS, ...ADV_FIELDS].forEach((d) => d.sync?.()); }
 
 function save() { writeSaved({ A, M, presetId }); }
+const savedSticks = (stick?: Record<number, number>) => Object.fromEntries(STICK_GB.map((g) => [g, Number(stick?.[g]) || 0]));
 const MACHINE_NUMBERS = ['price', 'ram', 'st', 'mt', 'idle', 'load', 'reserve'] as const;
 function restore() {
   const s = readSaved();
   if (!s) return false;
   A = s.A;
   // A machine still in the catalog reloads from current data, so price and spec updates reach returning
-  // visitors; only the upgrade inputs, which don't mark the machine as edited, carry over.
+  // visitors; only the upgrade and RAM stick inputs, which don't mark the machine as edited, carry over.
   if (s.presetId !== 'custom' && allMachines().some((x) => x.id === s.presetId)) {
     loadPreset(s.presetId);
     M.upGB = Number(s.M.upGB) || 0; M.upCost = Number(s.M.upCost) || 0;
+    M.slots = Number(s.M.slots) || 0; M.stick = savedSticks(s.M.stick);
     return true;
   }
   // An edited machine, or one no longer in the catalog, is kept only if it is complete.
   if (MACHINE_NUMBERS.every((k) => typeof s.M[k] === 'number' && isFinite(s.M[k]))) {
-    M = { ...s.M, name: typeof s.M.name === 'string' ? s.M.name : 'Custom machine', owned: !!s.M.owned, upGB: Number(s.M.upGB) || 0, upCost: Number(s.M.upCost) || 0, cpus: Number(s.M.cpus) || 1 };
+    M = { ...s.M, name: typeof s.M.name === 'string' ? s.M.name : 'Custom machine', owned: !!s.M.owned, upGB: Number(s.M.upGB) || 0, upCost: Number(s.M.upCost) || 0, cpus: Number(s.M.cpus) || 1, slots: Number(s.M.slots) || 0, stick: savedSticks(s.M.stick) };
     presetId = 'custom';
   } else {
     loadPreset(REFERENCE_ID);
@@ -221,6 +230,7 @@ function render() {
     const better = uLife < r.lifePer;
     flags.push([better ? 'ok' : 'warn', txt]);
   }
+  renderSticks();
   if (M.owned && r.n > 0) flags.push(['ok', 'Already paid for, so only electricity counts.']);
   const ul = $('flags'); ul.textContent = '';
   flags.forEach(([s, t]) => { const li = document.createElement('li'); li.dataset.state = s; li.textContent = t; ul.appendChild(li); });
@@ -228,6 +238,18 @@ function render() {
   drawChart(r);
   renderTable(ref);
   save();
+}
+
+function renderSticks() {
+  $('sticks-box').hidden = M.cpus < 2;
+  const out = $('sticks-out');
+  const prices = Object.fromEntries(STICK_GB.filter((g) => M.stick[g] > 0).map((g) => [g, M.stick[g]]));
+  if (M.cpus < 2 || !M.slots || !Object.keys(prices).length) { out.textContent = 'Enter the slots per CPU and at least one stick price to compare.'; return; }
+  const opts = stickOptions(M.ram, M.cpus, M.slots, prices);
+  const best = Math.min(...opts.filter((o) => o.fits).map((o) => o.cost));
+  out.textContent = M.ram + ' GB across ' + M.cpus + ' CPUs × ' + M.slots + ' slots: ' + opts.map((o) => !o.fits
+    ? o.gb + ' GB sticks need ' + o.sticks / M.cpus + ' slots per CPU'
+    : o.sticks + ' × ' + o.gb + ' GB = ' + fmt$(o.cost) + (o.cost === best ? ' (cheapest)' : '')).join(' · ') + '.';
 }
 
 function drawChart(r: Result) {
@@ -351,6 +373,8 @@ function init() {
   $('os-seg').addEventListener('click', (e) => { const b = e.target instanceof Element ? e.target.closest('button') : null; if (!b) return; M.reserve = Number(b.dataset.v); markCustom(); syncMachine(); render(); });
   $('upgb').addEventListener('input', () => { M.upGB = Number($('upgb').value) || 0; render(); });
   $('upcost').addEventListener('input', () => { M.upCost = Number($('upcost').value) || 0; render(); });
+  $('slots').addEventListener('input', () => { M.slots = Number($('slots').value) || 0; render(); });
+  STICK_GB.forEach((g) => $(`stick${g}` as 'stick16').addEventListener('input', () => { M.stick[g] = Number($(`stick${g}` as 'stick16').value) || 0; render(); }));
   $('reset').addEventListener('click', () => { A = { ...DEFAULTS }; syncWork(); render(); });
 
   const restored = restore();
