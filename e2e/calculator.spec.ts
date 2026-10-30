@@ -114,7 +114,7 @@ test('keyboard user activates comparison rows with Enter and Space', async ({ pa
 test('keyboard can reach every control with a visible focus ring', async ({ page }) => {
   await page.goto(site);
   await page.getByText('More assumptions', { exact: true }).click();
-  const selector = 'input, select, button, summary, tr[tabindex="0"]';
+  const selector = 'a[href], input, select, button, summary, tr[tabindex="0"]';
   const total = await page.locator(selector).count();
   const reached = new Set<number>();
   for (let i = 0; i < total + 3 && reached.size < total; i++) {

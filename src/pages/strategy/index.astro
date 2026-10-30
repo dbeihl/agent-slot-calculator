@@ -1,0 +1,78 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+---
+
+<Base title="Buying Strategy · Agent Slot Calculator" description="Pick a buying strategy for your agent fleet from the cash you have, whether you would finance, and what you will run.">
+  <div class="wrap">
+    <Header
+      current="strategy"
+      title="Buying strategy"
+      intro="The cheapest machine per agent isn't always the one you can buy today. Tell it where you are and it compares four ways to reach your agent count: cash only, financing the rest, growing in stages, and the lowest monthly bill."
+    />
+    <div class="stack">
+      <section class="panel" aria-labelledby="h-situation">
+        <div class="panel-head">
+          <h2 id="h-situation">Where you are</h2>
+          <span class="eyebrow" id="s-assume"></span>
+        </div>
+        <div class="fields three">
+          <div class="field">
+            <label for="s-cash">Cash available now</label>
+            <span class="num"><span class="pre">$</span><input type="number" id="s-cash" min="0" step="100" inputmode="numeric"></span>
+          </div>
+          <div class="field">
+            <label for="s-target">Agents you want</label>
+            <span class="num"><input type="number" id="s-target" min="1" max="200" step="1" inputmode="numeric"></span>
+          </div>
+          <div class="field">
+            <label for="s-boxes">Most machines to run</label>
+            <span class="num"><input type="number" id="s-boxes" min="1" max="8" step="1" inputmode="numeric"></span>
+          </div>
+          <div class="field">
+            <label for="s-cap">Monthly limit <span class="opt">(optional)</span></label>
+            <span class="num"><span class="pre">$</span><input type="number" id="s-cap" min="0" step="10" inputmode="numeric" placeholder="none"></span>
+            <p class="hint">Power plus any loan payment.</p>
+          </div>
+        </div>
+        <fieldset class="finance">
+          <legend class="visually-hidden">Financing</legend>
+          <label class="check"><input type="checkbox" id="s-finance"> I can finance what my cash doesn't cover</label>
+          <div class="row finance-terms">
+            <label for="s-apr">Rate</label>
+            <span class="num"><input type="number" id="s-apr" min="0" max="60" step="0.5" inputmode="decimal"><span class="unit">% APR</span></span>
+            <label for="s-term">over</label>
+            <select id="s-term">
+              <option value="12">12 months</option>
+              <option value="24">24 months</option>
+              <option value="36">36 months</option>
+              <option value="48">48 months</option>
+              <option value="60">60 months</option>
+            </select>
+          </div>
+        </fieldset>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="s-used"> Used and refurbished machines are fine</label>
+          <label class="check"><input type="checkbox" id="s-servers"> Rack servers are fine (loud, power-hungry)</label>
+        </div>
+        <p class="hint">Workload, electricity and years of use come from the calculator. <a class="text-link" href={import.meta.env.BASE_URL}>Change them there</a>.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-strategies" aria-live="polite">
+        <div class="panel-head"><h2 id="h-strategies">Four ways to get there</h2><span class="eyebrow">Recommended first</span></div>
+        <p class="rec" id="s-rec"></p>
+        <ul class="legend" aria-label="Cost bar key">
+          <li><span class="swatch seg-buy"></span>Bought now</li>
+          <li><span class="swatch seg-later"></span>Upgrade later</li>
+          <li><span class="swatch seg-power"></span>Power</li>
+          <li><span class="swatch seg-interest"></span>Interest</li>
+        </ul>
+        <div class="strategies" id="s-cards"></div>
+        <p class="hint">Each strategy searches every machine on the cost chart, including ones you added there, in fleets of up to your machine limit. Machines don't share capacity, so a fleet's agents are the sum of each machine's. Lifetime cost is purchase, later upgrades, power over the years you set, and interest.</p>
+      </section>
+    </div>
+  </div>
+  <script>
+    import '../../scripts/strategy';
+  </script>
+</Base>

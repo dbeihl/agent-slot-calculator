@@ -8,6 +8,8 @@ Journey: `e2e/calculator.spec.ts`. Confirm the default 14-agent, $214 hardware, 
 
 Journey: `e2e/costs.spec.ts`. Compare every machine on the cost chart, read a dot's tooltip by pointer and keyboard, and open a machine in the calculator from its row.
 
+Journey: `e2e/strategy.spec.ts`. Enter cash on hand and an agent target, compare the four buying strategies, turn on financing to see the loan's cost, and open a recommended machine in the calculator.
+
 ## Fleet operator
 
 Models a measured workload and machines already owned. Changes workload chips, electricity and advanced assumptions, saves a custom machine through reload, and resets report defaults.
