@@ -1,7 +1,8 @@
 /**
  * Preset machines and default assumptions.
  *
- * Source: the October 2026 research report (docs/research-report.md).
+ * Source: the October 2026 research report (docs/research-report.md), except the
+ * _AB entries, which are Aaron's own machines with PassMark sources.
  * Scores are PassMark (single-thread rating, CPU Mark). Mac scores are
  * estimates converted into PassMark terms. "est." figures are flagged in `note`.
  * Ported 1:1 from prototype/agent-slot-calculator.html.

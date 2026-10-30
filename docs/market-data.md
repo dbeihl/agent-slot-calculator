@@ -1,12 +1,12 @@
 # Market data
 
-The cost chart plots the report's 23 presets plus market listings. This file explains where the market numbers come from, the rules they pass, how to add more, and what is still missing.
+The cost chart plots the report's 23 presets, Aaron's own machines (_AB, with PassMark sources) and market listings. This file explains where the market numbers come from, the rules they pass, how to add more, and what is still missing.
 
 ## Files
 
 | File | Holds | Changed by |
 | --- | --- | --- |
-| `src/data/presets.ts` | The report's 23 machines, unchanged | Hand, only for an intentional model update |
+| `src/data/presets.ts` | The report's 23 machines, unchanged, plus Aaron's own machines (_AB) with PassMark sources in `catalog.ts` | Hand, only for an intentional model update |
 | `src/data/cpus.json` | One row per processor: PassMark single-thread rating (`st`), CPU Mark (`mt`), TDP, source page, snapshot date | Hand |
 | `src/data/listings.json` | One row per priced machine: processor id, memory, price, condition, type, source page, date | Hand |
 | `src/data/market-prices.json` | eBay median asking prices by listing id | `scripts/refresh-prices.mjs` only |

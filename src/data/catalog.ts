@@ -7,7 +7,8 @@
  * `market-prices.json` is written by `scripts/refresh-prices.mjs` and, when it
  * has a fresh eBay median for a listing, replaces that listing's price.
  *
- * The presets in `presets.ts` stay exactly as the report gave them; the
+ * The report's presets in `presets.ts` stay exactly as the report gave them
+ * (the _AB entries are Aaron's own machines with PassMark sources); the
  * catalog only adds metadata (condition, form, provenance) around them.
  */
 import type { Machine } from '../lib/model';
@@ -95,7 +96,7 @@ const MARKET = (marketPrices as { prices: Record<string, MarketPrice> }).prices;
 const cpuById = new Map(CPUS.map((c) => [c.id, c]));
 export const findCpu = (id: string) => cpuById.get(id);
 
-/** Report presets: condition and form from the report's scorecard; power marked estimated where the report says so. */
+/** Report presets: condition and form from the report's scorecard; power marked estimated where the report says so. The _AB entries are Aaron's own machines, sourced per entry through `source`. */
 const REPORT_META: Record<string, { condition: Condition; form: Form; powerEstimated?: boolean; source?: string }> = {
   m920q: { condition: 'used', form: 'mini', powerEstimated: true },
   m720q: { condition: 'used', form: 'mini', powerEstimated: true },

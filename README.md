@@ -31,7 +31,7 @@ Run the browser acceptance tests with `npm run test:e2e`. They start their own p
 4. Slower single-thread scores stretch the serial part of every build, which raises that machine's effective duty cycle. Weak multi-thread scores stretch the parallel part.
 5. Lifetime per agent is (price + years × yearly power) ÷ agents. Machines you already own count power only. "Worth it" means it beats the 128 GB Core Ultra 7 270K Plus desktop under the same settings; "Close call" is within 25%.
 
-The 23 presets and defaults come from the [research report](docs/research-report.md). Prices are from October 2026. Mac scores, several power figures and some prices are estimates. Used prices vary by listing.
+The 23 report presets and defaults come from the [research report](docs/research-report.md); the _AB entries are Aaron's own machines with PassMark sources. Prices are from October 2026. Mac scores, several power figures and some prices are estimates. Used prices vary by listing.
 
 ## Design and validation
 
