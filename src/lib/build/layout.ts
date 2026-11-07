@@ -60,13 +60,13 @@ const CHASSIS: Record<string, Chassis> = {
     rearHoles: [{ rect: [-46, 9, 113, 60] }, { rect: [134, 3, 198, 120] }, { circle: [2, 94, 29] }, { circle: [68, 94, 29] }],
     body: 0x1c1f23, targetY: 60, frame: 1,
   },
-  // Rear positions scaled off Rosewill's square-on rear photo; the fan wall is estimated from its angled photos.
+  // Rear positions scaled off Rosewill's square-on rear photo; the radiator stack is scaled from photos of a built one.
   rosewill: {
     W: 430, H: 176.5, D: 600, io: 108, slotY: [23, 120],
-    fanX: [-120, 0, 120], fanY: 88, fanWall: 100,
+    fanX: [-120, 0, 120], fanY: 88, fanWall: 15,
     psuX: 164.75, rearFanX: [-5, 75], rearFanY: 120,
     rearHoles: [{ rect: [-49, 12, 112, 63] }, { rect: [122, 3, 207.5, 153] }, { circle: [-5, 120, 38] }, { circle: [75, 120, 38] }],
-    body: 0xb4b8be, targetY: 80, frame: 1.3,
+    body: 0x1c1f23, targetY: 80, frame: 1.3,
   },
 };
 
@@ -81,6 +81,9 @@ const FAN = 25;
 const RAD = 38;
 /** Width, height and depth as the PSU stands on end, modular face toward the front. */
 const PSU_SIZE: Record<string, [number, number, number]> = { sf1000: [63.5, 125, 100], gx750: [86, 150, 140] };
+
+/** Front face to the Rosewill's bracket fans, scaled from photos of a built one. */
+const BRACKET = 185;
 
 /** Box id prefix, which sets the colour, and frame size for each rear fan. */
 const REAR_FAN: Record<string, [string, number]> = { 'nf-a6x25': ['rear-fan', 60], p8: ['rear-p8', 80], 'nf-r8': ['rear-r8', 80] };
@@ -131,9 +134,9 @@ export function layout(config: Config): Box[] {
     // Front-panel USB/switch board, in the front-right corner behind the door.
     b.push(box('front-io', 'chassis', 'solid', [X(388), 95, ZF(14)], [X(418), 128, ZF(2)], fwd(120)));
   } else {
-    // The crossbar over the board and the top of the fan wall. Shells, so a guess at their height can't fail the check.
-    b.push(box('bar-mid', 'chassis', 'shell', [-W / 2, H - 14, ZR(205)], [W / 2, H - T, ZR(225)], up(110)));
-    b.push(box('bar-wall', 'chassis', 'shell', [-W / 2, H - 22, ZF(C.fanWall + FAN)], [W / 2, H - T, ZF(C.fanWall)], up(110)));
+    // The crossbar over the board and the bracket's bar. Shells, so a guess at their height can't fail the check.
+    b.push(box('bar-mid', 'chassis', 'shell', [-W / 2 + T, H - 14, ZR(205)], [W / 2 - T, H - T, ZR(225)], up(110)));
+    b.push(box('bar-wall', 'chassis', 'shell', [-W / 2 + T, H - 22, ZF(BRACKET)], [W / 2 - T, H - T, ZF(BRACKET - 20)], up(110)));
   }
   // Blank covers on every slot no card uses.
   const used = [...(config.gpu ? [GPU_SLOT, GPU_SLOT + 1] : []), ...(config.nic ? [NIC_SLOT] : [])];
@@ -194,6 +197,7 @@ export function layout(config: Config): Box[] {
   // Front wall: push fans, radiator, pull fans.
   C.fanX.forEach((cx, i) => b.push(centred(`push-${i}`, 'fans-push', 'solid', [cx, C.fanY, ZF(C.fanWall + FAN / 2)], [120, 120, FAN], fwd(150))));
   b.push(centred('radiator', 'radiator', 'solid', [(C.fanX[0] + C.fanX[2]) / 2, C.fanY, ZF(C.fanWall + FAN + RAD / 2)], [398, 120, RAD], fwd(100)));
+  if (config['fans-bracket']) C.fanX.forEach((cx, i) => b.push(centred(`bracket-${i}`, 'fans-bracket', 'solid', [cx, C.fanY, ZF(BRACKET + FAN / 2)], [120, 120, FAN], up(60))));
   if (config['fans-pull']) C.fanX.forEach((cx, i) => b.push(centred(`pull-${i}`, 'fans-pull', 'solid', [cx, C.fanY, ZF(C.fanWall + FAN + RAD + FAN / 2)], [120, 120, FAN], fwd(50))));
 
   return b;
@@ -225,9 +229,9 @@ export function checkFit(boxes: Box[], config: Config): Fit {
   const outside = solids.filter((b) => [0, 1, 2].some((k) => b.min[k] < lim[k][0] - 0.01 || b.max[k] > lim[k][1] + 0.01)).map((b) => b.id);
   const by = (id: string) => boxes.find((b) => b.id === id);
   const gpu = by('gpu'), rad = by('radiator')!, pump = by('pump')!;
-  const pull = by('pull-0');
-  const wall = pull ?? rad;
-  const wallName = pull ? 'pull fans' : 'radiator';
+  const bracket = by('bracket-0'), pull = by('pull-0');
+  const wall = bracket ?? pull ?? rad;
+  const wallName = bracket ? 'bracket fans' : pull ? 'pull fans' : 'radiator';
   const gaps = [
     ...(gpu ? [
       { label: `GPU end to the ${wallName}`, mm: wall.min[2] - gpu.max[2] },

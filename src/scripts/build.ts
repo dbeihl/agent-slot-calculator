@@ -44,7 +44,7 @@ function renderPanels() {
   // The dropdowns follow the config: a chassis sets some parts, and offers only the parts that suit it.
   document.querySelectorAll<HTMLSelectElement>('#swaps select').forEach((el) => {
     const slot = SLOTS.find((s) => s.id === el.dataset.slot)!;
-    el.disabled = !!slot.requires && !config[slot.requires];
+    el.disabled = (!!slot.requires && !config[slot.requires]) || !slot.parts.some((p) => !p.chassis || p.chassis === config.chassis);
     for (const o of el.options) {
       const only = slot.parts.find((p) => p.id === o.value)?.chassis;
       o.hidden = o.disabled = !!only && only !== config.chassis;

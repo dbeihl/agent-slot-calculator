@@ -51,14 +51,20 @@ export function buildModel(config: Config): Built {
     if (!pump || !radiator) return;
     const rb = new THREE.Box3().setFromObject(radiator);
     const pb = new THREE.Box3().setFromObject(pump);
+    const bracketFans = byPart.get('fans-bracket');
+    const bracket = bracketFans && bracketFans.reduce((box, o) => box.expandByObject(o), new THREE.Box3());
     tubes.forEach((t, i) => {
       const dy = i ? 14 : -14;
       const dx = i ? 11 : -11;
       const start = new THREE.Vector3(rb.max.x - 12, (rb.min.y + rb.max.y) / 2 + dy, rb.min.z);
       const end = new THREE.Vector3((pb.min.x + pb.max.x) / 2 + dx, pb.max.y - 22, pb.max.z);
+      // Past the bracket fans through the gap at the wall, as on a built Rosewill.
+      const x = bracket ? bracket.max.x + (i ? 24 : 9) : 0;
+      const bypass = bracket ? [new THREE.Vector3(x, start.y, bracket.max.z + 5), new THREE.Vector3(x, start.y, bracket.min.z - 5)] : [];
       const curve = new THREE.CatmullRomCurve3([
         start,
         start.clone().add(new THREE.Vector3(0, 0, -45)),
+        ...bypass,
         new THREE.Vector3((start.x + end.x) / 2, Math.max(start.y, end.y) + 15, (start.z + end.z) / 2),
         end.clone().add(new THREE.Vector3(0, 0, 40)),
         end,

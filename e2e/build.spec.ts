@@ -59,7 +59,30 @@ test('swapping parts updates the model, the fit check and the prices', async ({ 
   await page.getByLabel('Chassis').selectOption('rackchoice');
   await expect(page.getByLabel('Power supply')).toHaveValue('sf1000');
   await expect(page.getByLabel('Rear fans')).toHaveValue('nf-a6x25');
-  await expect(page.getByRole('button', { name: '3 × ARCTIC P12 Pro PST, push' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '3 × ARCTIC P12 Pro PST, intermediary bracket' })).toHaveCount(0);
+  await expect(page.getByLabel('Bracket fans')).toBeDisabled();
+});
+
+test('Rosewill cooler tubes run past the bracket fans, inside the wall', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(url);
+  await page.getByLabel('Chassis').selectOption('rosewill');
+  const { inFans, maxX } = await page.evaluate(() => {
+    const { byPart } = (window as any).__build.model();
+    const fans = byPart.get('fans-bracket').map((o: any) => o.position);
+    let inFans = 0, maxX = 0;
+    for (const t of byPart.get('cooler').filter((o: any) => o.geometry?.type === 'TubeGeometry')) {
+      const p = t.geometry.attributes.position;
+      for (let i = 0; i < p.count; i++) {
+        const [x, y, z] = [p.getX(i), p.getY(i), p.getZ(i)];
+        maxX = Math.max(maxX, x);
+        if (fans.some((f: any) => Math.abs(x - f.x) < 60 && Math.abs(y - f.y) < 60 && Math.abs(z - f.z) < 12.5)) inFans++;
+      }
+    }
+    return { inFans, maxX };
+  });
+  expect(inFans).toBe(0);
+  expect(maxX).toBeLessThan(215);
 });
 
 test('leaving out the GPU warns only with a CPU that has no integrated graphics', async ({ page }) => {
