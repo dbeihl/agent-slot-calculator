@@ -63,12 +63,23 @@ The script is tested against a stub of the API (`test/refresh-prices.test.ts`) a
 - **A processor:** add a row to `cpus.json` with both scores and the PassMark page. The id is the lowercased name with non-alphanumerics as hyphens.
 - **A listing:** add a row to `listings.json` with a `mk-` id, then run `npm test`.
 
+### GMKtec store
+
+The `mk-gmktec-` rows added on 2026-11-08 come from GMKtec's AMD mini PC collection (`gmktec.com/collections/amd-mini-pc`), read through the store's product data that day, with each row's `source` linking its product page. One row per configuration a buyer would consider. Prices are the store's sale prices, and the list price is in `notes`. Memory limits (`maxRam`) are from each product page's spec table; where a page gives two figures, the lower one is used.
+
+- **Barebones:** each barebone is a complete working machine: the barebone, a 96 GB DDR5 SO-DIMM kit (Crucial 2×48 GB, $899.99, Newegg) or a 64 GB kit (G.Skill 2×32 GB, $900, DatacenterDisk) where the box tops out at 64 GB, and the report's $210 2 TB NVMe. These totals are static and don't follow the Settings page.
+- **NEO-X1 Pro:** these rows include a graphics card that agents don't use. Their power estimate leaves the GPU out, so real running costs are higher.
+- **16 GB machines:** the 16 GB-only models are listed so they show up as unable to hold an agent at the default settings.
+- **Left out:** the G11 (Ryzen Embedded R2514), sold out for US delivery.
+
+Thirteen processors were added for these rows, each from a PassMark comparison page found through web search. The 7730U and 6950H rows use older snapshots (2025-02 and an undated page read in 2026-11) because those pages could be tied to an exact URL. The report's EVO-X2 preset gets 11 agents and the market rows 14, because PassMark's figure for the 395 rose from 54,530 to 55,040. That 1% crosses the point where a seventh simultaneous build fits the CPU at the default settings.
+
 ## Still missing
 
 These processors have no scores yet, so listings using them were dropped. They are the next research batch.
 
 - **Intel:** i5-14500T, i5-14500, i7-14700, i9-14900K, Core Ultra 5 225, Ultra 5 245K, Ultra 7 265K, Ultra 5 125H, Ultra 7 155H, Ultra 9 185H, Ultra 7 255H, Ultra 9 285H, N100, i3-N305, i5-12450H, i7-12700H, i9-12900H, i9-13900H, i5-1240P, i7-1260P, i5-11500, i5-8350U, i7-8665U, i5-1135G7, i7-1165G7, i5-1145G7, i7-1185G7.
 - **Xeon Scalable and W, common in used workstations and servers:** Silver 4114, 4210; Gold 5122, 6130, 6136, 6150, 6152, 6154, 6234, 6240, 6244, 6246; W-2133, W-2155, w7-2495X; E5-2699 v4; Core i7-7820X, i9-7900X.
-- **AMD:** Ryzen AI 9 365, Ryzen 7 8745HS, Ryzen 9 8945HS, Ryzen 9 9955HX, Ryzen AI Max+ PRO 495.
+- **AMD:** Ryzen AI 9 365, Ryzen 7 8745HS.
 - **Apple:** M2, M2 Pro, M2 Max, M2 Ultra, M3, M3 Pro, M3 Max, M3 Ultra, M4, M4 Pro, M4 Max, M5, M5 Pro (15-core), M5 Ultra.
 - **Price classes not yet covered:** new towers and workstations (Dell Pro Max, HP Z2/Z4, ThinkStation P3/P5/P8, System76, Puget) and used Ryzen and Core desktop builds.
